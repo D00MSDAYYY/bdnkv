@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#244e41">
+  <meta name="description" content="Личный планировщик задач со сроками, проектами и приоритетами.">
+  <title>Порядок — планировщик задач</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Навигация">
+      <a class="brand" href="./index.html"><span class="brand-mark">п.</span>порядок<span class="brand-dot">•</span></a>
+      <div class="workspace"><span class="avatar">М</span><div><strong>Моё пространство</strong><span>Личный планировщик</span></div></div>
+      <p class="nav-label">ПЛАНИРОВАНИЕ</p>
+      <nav class="navigation">
+        <button class="nav-item active" data-view="today"><span class="nav-icon">☀</span>Сегодня<span class="nav-count" id="today-count">0</span></button>
+        <button class="nav-item" data-view="upcoming"><span class="nav-icon">▦</span>Предстоящие</button>
+        <button class="nav-item" data-view="all"><span class="nav-icon">☷</span>Все задачи<span class="nav-count" id="all-count">0</span></button>
+        <button class="nav-item" data-view="done"><span class="nav-icon">✓</span>Выполненные</button>
+      </nav>
+      <p class="nav-label projects-label">ПРОЕКТЫ</p>
+      <nav class="navigation" aria-label="Проекты">
+        <button class="nav-item project-item" data-project="work"><span class="project-dot work"></span>Работа</button>
+        <button class="nav-item project-item" data-project="personal"><span class="project-dot personal"></span>Личное</button>
+        <button class="nav-item project-item" data-project="learning"><span class="project-dot learning"></span>Обучение</button>
+      </nav>
+      <div class="sidebar-note"><span class="note-spark">✳</span><strong>Маленькие шаги.<br>Большие перемены.</strong><p>Освободите голову.<br>Всё важное уже здесь.</p></div>
+      <div class="sidebar-footer"><span class="status-dot"></span>Ваш день, в вашем ритме</div>
+    </aside>
+
+    <main>
+      <header class="topbar"><span>Личное пространство <span class="crumb">/</span> <strong>Планировщик</strong></span><span class="topbar-date" id="topbar-date"></span></header>
+      <div class="content">
+        <section class="page-heading">
+          <div><p class="eyebrow">МЕНЬШЕ ХАОСА, БОЛЬШЕ ЯСНОСТИ</p><h1 id="page-title">Сегодня</h1><p class="subtitle" id="page-subtitle">Хороший день начинается с простого плана.</p></div>
+          <button class="button primary" id="add-task"><span aria-hidden="true">＋</span> Новая задача</button>
+        </section>
+
+        <section class="overview" aria-label="Статистика на сегодня">
+          <div class="stat"><span class="stat-label">Задачи на сегодня <span>↗</span></span><div><strong id="stat-total">0</strong><span class="stat-detail">в вашем плане</span></div></div>
+          <div class="stat"><span class="stat-label">Уже выполнено <span class="green-text">✓</span></span><div><strong id="stat-done">0</strong><span class="stat-detail">шагов вперёд</span></div></div>
+          <div class="stat progress-stat"><span class="stat-label">Прогресс дня <span>◔</span></span><div><strong id="stat-percent">0<span>%</span></strong><span class="stat-detail" id="progress-message">Всё начинается с первого шага</span></div><div class="progress-track" role="progressbar" aria-label="Выполнено задач сегодня" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div></div>
+        </section>
+
+        <section class="week-panel" aria-label="Выбор дня">
+          <div class="week-header"><h2 id="week-label">Эта неделя</h2><div><button class="text-button" id="reset-week">Сегодня</button><button class="icon-button" id="previous-week" aria-label="Предыдущая неделя">‹</button><button class="icon-button" id="next-week" aria-label="Следующая неделя">›</button></div></div>
+          <div class="week-days" id="week-days"></div>
+        </section>
+
+        <section class="tasks-section" aria-labelledby="tasks-heading">
+          <div class="tasks-heading"><div class="list-title"><h2 id="tasks-heading">План на день</h2><span id="list-count" class="count-pill">0</span></div><label class="sort-control">Сортировать: <select id="sort" aria-label="Сортировка задач"><option value="created">по добавлению</option><option value="priority">по приоритету</option><option value="date">по сроку</option></select></label></div>
+          <div class="toolbar"><div class="filter-tabs" role="group" aria-label="Статус задач"><button class="filter-tab active" data-status="all">Все</button><button class="filter-tab" data-status="active">В работе</button><button class="filter-tab" data-status="done">Готово</button></div><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Найти задачу…" aria-label="Поиск задач"></label></div>
+          <div id="task-list" class="task-list"></div>
+          <button class="inline-add" id="inline-add"><span>＋</span> Добавить задачу <span class="inline-hint">Ещё один шаг к цели</span></button>
+        </section>
+        <footer class="page-footer"><span>Не обязательно успеть всё. Начните с важного.</span><span>Сделано для спокойных дней <span class="footer-flower">✳</span></span></footer>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="task-dialog" aria-labelledby="dialog-title">
+    <form id="task-form">
+      <div class="dialog-header"><div><p class="eyebrow">ОСВОБОДИТЕ МЕСТО ДЛЯ ВАЖНОГО</p><h2 id="dialog-title">Новая задача</h2></div><button type="button" class="icon-button" id="close-dialog" aria-label="Закрыть">×</button></div>
+      <label class="field">Что нужно сделать?<input name="title" id="task-title" placeholder="Например, подготовить презентацию" required maxlength="200" autocomplete="off"></label>
+      <label class="field">Заметка <span class="optional">необязательно</span><textarea name="note" id="task-note" rows="3" maxlength="1000" placeholder="Детали, которые пригодятся…"></textarea></label>
+      <div class="form-row"><label class="field">Срок<input type="date" name="date" id="task-date" min="1900-01-01" max="9999-12-31"></label><label class="field">Приоритет<select name="priority" id="task-priority"><option value="medium">Средний</option><option value="high">Высокий</option><option value="low">Низкий</option></select></label></div>
+      <label class="field">Проект<select name="project" id="task-project"><option value="work">Работа</option><option value="personal">Личное</option><option value="learning">Обучение</option></select></label>
+      <div class="dialog-actions"><button class="button secondary" type="button" id="cancel-dialog">Отмена</button><button class="button primary" type="submit" id="save-task">Создать задачу</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

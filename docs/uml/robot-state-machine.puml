@@ -1,0 +1,67 @@
+@startuml robot-state-machine
+title Робот-тележка — UML-диаграмма состояний
+
+hide empty description
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam stateBackgroundColor #F2F6FA
+skinparam stateBorderColor #40556B
+skinparam ArrowColor #40556B
+
+[*] --> Operational
+
+state "Рабочий цикл" as Operational {
+    state "Инициализация\nInitializing" as Initializing
+    state "Ожидание готовности\nWaitingForReady" as WaitingForReady
+    state "Готов к запуску\nReady" as Ready
+    state "Выполнение маршрута\nMoving" as Moving
+    state "Ожидание остановки\nStopping" as Stopping
+    state "Маршрут завершён\nCompleted" as Completed
+    state "Остановлен оператором\nStopped" as Stopped
+
+    [*] --> Initializing
+    Initializing : entry / connectDevices()
+    Initializing --> WaitingForReady : connected
+    WaitingForReady : entry / requestControllerReady()
+    WaitingForReady --> Ready : controllerReady
+    Ready : entry / reportReady()
+    Ready --> Moving : start [routeNotEmpty] / selectFirstTarget()
+
+    Moving : tick [!targetVisible] / sendZeroVelocity()
+    Moving : tick [targetVisible && !targetReached] / updateMotion()
+    Moving : tick [targetVisible && targetReached && !lastPoint] / advanceTarget()
+    Moving --> Stopping : tick [targetVisible && targetReached && lastPoint]\n/ stopReason = RouteCompleted
+    Moving --> Stopping : operatorStop / stopReason = OperatorRequest
+
+    Stopping : entry / sendStop()
+    Stopping --> Completed : stoppedConfirmed [stopReason == RouteCompleted]
+    Stopping --> Stopped : stoppedConfirmed [stopReason == OperatorRequest]
+    Completed : entry / reportCompleted()
+    Stopped : entry / reportStopped()
+    Completed --> Ready : loadRoute [equipmentReady] / setRoute()
+    Stopped --> Ready : loadRoute [equipmentReady] / setRoute()
+}
+
+state "Ошибка\nFault" as Fault
+Operational --> Fault : faultDetected / rememberFault()
+Fault : entry / requestStop(); reportFault()
+Fault --> Operational : reset [causeCleared]
+
+note right of Fault
+    faultDetected:
+    аварийная кнопка, препятствие,
+    отказ устройства или связи,
+    watchdog, тайм-аут подключения,
+    готовности или остановки.
+end note
+
+legend bottom
+    Переход: событие [условие] / действие
+    entry / действие — выполняется при входе в состояние.
+    Внутренние переходы Moving сохраняют состояние и текущий маршрут.
+    stoppedConfirmed — ответ контроллера о фактической нулевой скорости.
+    Сброс Fault повторно запускает инициализацию рабочего цикла.
+    Состояния и переходы реализованы в Robot; оборудование имитируется.
+endlegend
+@enduml
